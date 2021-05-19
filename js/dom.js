@@ -1,14 +1,22 @@
 const UNCOMPLETED_LIST_TODO_ID = "todos";
-addTodo = () => {
+const COMPLETED_LIST_TODO_ID = "completed-todos";
+const TODO_ITEMID = "itemId";
+
+function addTodo() {
   const uncompletedTODOList = document.getElementById(UNCOMPLETED_LIST_TODO_ID);
   const textTodo = document.getElementById("title").value;
   const timestamp = document.getElementById("date").value;
-  console.log("todo " + textTodo);
-  console.log("timestamp " + timestamp);
 
-  const todo = makeTodo(textTodo, timestamp);
+  const todo = makeTodo(textTodo, timestamp, false);
+  const todoObject = composeTodoObject(textTodo, timestamp, false);
+
+  todo[TODO_ITEMID] = todoObject.id;
+  todos.push(todoObject);
+
   uncompletedTODOList.append(todo);
+  updateDataToStorage();
 };
+
 makeTodo = (data, timestamp, isCompleted) => {
   const textTitle = document.createElement("h2");
   textTitle.innerText = data;
@@ -31,6 +39,7 @@ makeTodo = (data, timestamp, isCompleted) => {
 
   return container;
 };
+
 createButton = (buttonTypeClass, eventListener) => {
   const button = document.createElement("button");
   button.classList.add(buttonTypeClass);
@@ -40,7 +49,6 @@ createButton = (buttonTypeClass, eventListener) => {
   return button;
 };
 
-const COMPLETED_LIST_TODO_ID = "completed-todos";
 addTaskToCompleted = (taskElement) => {
   taskElement.remove();
 };
@@ -52,13 +60,19 @@ createCheckButton = () => {
 };
 
 addTaskToCompleted = (taskElement) => {
+  const listCompleted = document.getElementById(COMPLETED_LIST_TODO_ID);
   const taskTitle = taskElement.querySelector(".inner > h2").innerText;
   const taskTimestamp = taskElement.querySelector(".inner > p").innerText;
 
   const newTodo = makeTodo(taskTitle, taskTimestamp, true);
-  const listCompleted = document.getElementById(COMPLETED_LIST_TODO_ID);
+  const todo = findTodo(taskElement[TODO_ITEMID]);
+  todo.isCompleted = true;
+  newTodo[TODO_ITEMID] = todo.id;
+
   listCompleted.append(newTodo);
   taskElement.remove();
+
+  updateDataToStorage();
 };
 
 removeTaskFromCompleted = (taskElement) => {
@@ -78,8 +92,14 @@ undoTaskFromCompleted = (taskElement) => {
 
   const newTodo = makeTodo(taskTitle, taskTimestamp, false);
 
+  const todo = findTodo(taskElement[TODO_ITEMID]);
+  todo.isCompleted = false;
+  newTodo[TODO_ITEMID] = todo.id;
+
   listUncompleted.append(newTodo);
   taskElement.remove();
+
+  updateDataToStorage();
 };
 
 createUndoButton = () => {
